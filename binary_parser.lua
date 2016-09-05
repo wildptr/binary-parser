@@ -161,12 +161,11 @@ function P.new(file)
       local t = Node:new(name, pos)
       local saved_current_node = current_node
       current_node = t
-      proc(function(x)
-        if x == '.' then
+      proc(function(field)
+        if field == '.' then
           return pos-t.start
-        else
-          return t(x)
         end
+        return t(field)
       end)
       current_node = saved_current_node
       t.size = pos - t.start
