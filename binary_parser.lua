@@ -21,16 +21,14 @@ function Node:append_node(child)
   self.dir[child.name] = index
 end
 
-function Node:child(name)
-  return self.children[self.dir[name]]
-end
-
-function Node:field(list)
-  local node = self
+function Node:__call(field)
+  local child = self.children[self.dir[field]]
+  return child.value or child
+  --[[local node = self
   for i=1,#list do
     node = node:child(list[i])
   end
-  return node.value or node
+  return node.value or node]]
 end
 
 function Node:print()
@@ -167,7 +165,7 @@ function P.new(file)
         if x == '.' then
           return pos-t.start
         else
-          return t:field(x)
+          return t(x)
         end
       end)
       current_node = saved_current_node

@@ -1,50 +1,41 @@
 local P = {} -- this package
 
-local binary_parser = require('binary_parser')
-assert(binary_parser)
+local bp = require('binary_parser')
 
 function P.parse(file)
 
-  local B = binary_parser.new(file)
-
-  local u8     = B.u8
-  local u16    = B.u16
-  local u32    = B.u32
-  local u64    = B.u64
-  local array  = B.array
-  local ascii  = B.ascii
-  local data   = B.data
-  local map    = B.map
-  local record = B.record
+  for k,v in pairs(bp.new(file)) do
+    _ENV[k] = v
+  end
 
   local dos_header = record(function(eval)
-    local magic = u16('e_magic')
+    local magic = u16 'e_magic'
     if magic ~= 0x5a4d then
       error(string.format('invalid DOS executable magic: 0x%04x', magic))
     end
-    u16('e_cblp')
-    u16('e_cp')
-    u16('e_crlc')
-    u16('e_cparhdr')
-    u16('e_minalloc')
-    u16('e_maxalloc')
-    u16('e_ss')
-    u16('e_sp')
-    u16('e_csum')
-    u16('e_ip')
-    u16('e_cs')
-    u16('e_lfarlc')
-    u16('e_ovno')
-    data(8)('e_res')
-    u16('e_oemid')
-    u16('e_oeminfo')
-    data(20)('e_res2')
-    u32('e_lfanew')
+    u16 'e_cblp'
+    u16 'e_cp'
+    u16 'e_crlc'
+    u16 'e_cparhdr'
+    u16 'e_minalloc'
+    u16 'e_maxalloc'
+    u16 'e_ss'
+    u16 'e_sp'
+    u16 'e_csum'
+    u16 'e_ip'
+    u16 'e_cs'
+    u16 'e_lfarlc'
+    u16 'e_ovno'
+    data(8) 'e_res'
+    u16 'e_oemid'
+    u16 'e_oeminfo'
+    data(20) 'e_res2'
+    u32 'e_lfanew'
   end)
 
   local dos_exe = record(function(eval)
     dos_header('dos_header')
-    data( eval{'dos_header', 'e_lfanew'} - eval'.' )('data')
+    data( eval'dos_header''e_lfanew' - eval'.' )('data')
   end)
 
   local data_directory = record(function()
@@ -92,7 +83,7 @@ function P.parse(file)
     usize('heap_size_commit')
     u32('loader_flags')
     u32('num_data_directories')
-    array(data_directory, eval{'num_data_directories'})('data_directories')
+    array(data_directory, eval'num_data_directories')('data_directories')
   end)
 
   local pe_header = record(function(eval)
@@ -133,10 +124,10 @@ function P.parse(file)
   local pe = record(function(eval)
     dos_exe('dos_exe')
     local pe_header = pe_header('pe_header')
-    local num_sections = pe_header:field{'num_sections'}
+    local num_sections = pe_header 'num_sections'
     local section_headers = array(section_header, num_sections)('section_headers')
     map(function(h)
-      return section(h:field{'raw_data_offset'}-eval'.', h:field{'raw_data_size'})
+      return section(h'raw_data_offset'-eval'.', h'raw_data_size')
     end, section_headers)('sections')
   end)
 
