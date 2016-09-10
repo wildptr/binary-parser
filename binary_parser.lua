@@ -178,7 +178,7 @@ function P.new(file)
     end
   end
 
-  return {
+  local table =  {
     u8     = u8,
     u16    = u16,
     u32    = u32,
@@ -189,6 +189,14 @@ function P.new(file)
     map    = map,
     record = record,
   }
+
+  setmetatable(table, {__call = function(self)
+    for k,v in pairs(self) do
+      _G[k] = v
+    end
+  end})
+
+  return table
 end
 
 return P

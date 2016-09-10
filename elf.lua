@@ -4,9 +4,7 @@ local bp = require('binary_parser')
 
 function P.parse(file)
 
-  for k,v in pairs(bp.new(file)) do
-    _ENV[k] = v
-  end
+  bp.new(file)()
 
   local Elf_Ehdr = record(function()
     local magic = u32 'EI_MAG'
